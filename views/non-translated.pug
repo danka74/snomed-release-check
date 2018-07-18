@@ -1,0 +1,12 @@
+html
+  head
+    title Snomed release #{release} - Icke översatta begrepp
+
+body
+    h1 Icke översatta begrepp
+    p Antal begrepp som inte är översatta till svenska.
+    table
+        for hierarchy in results
+            tr
+                td #{hierarchy.term}
+                td #{hierarchy.ct}

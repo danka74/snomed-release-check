@@ -31,6 +31,18 @@ const queries = [
     WHERE moduleId = 45991000052106
       AND effectiveTime = __release__
       AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1);`
+  },
+  {
+    id: 'non-translated',
+    description: 'Icke-översatta begrepp efter hierarki',
+    sql: `
+    SELECT hierarchies.term, count(concepts_snap.id) AS ct FROM concepts_snap
+      JOIN transitiveclosure ON concepts_snap.id = transitiveclosure.subtypeId
+      JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
+    WHERE active = 1 
+      AND Id NOT IN (SELECT conceptId FROM descriptions_snap WHERE active = 1 AND languageCode = "sv")
+    GROUP BY hierarchies.conceptId, hierarchies.term
+    ORDER BY hierarchies.displayOrder;`
   }
 ];
 
