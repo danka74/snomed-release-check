@@ -11,7 +11,7 @@ app.set("view engine", "pug");
 
 const queries = [
   {
-    path: "new-concepts",
+    path: 'new-concepts',
     sql: `
   SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
     JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
@@ -19,20 +19,20 @@ const queries = [
   WHERE active = 1
     AND moduleId = 45991000052106
     AND effectiveTime = $$release$$
-    AND id IN (SELECT id FROM snomed_full_SE1000052_20180531.concepts GROUP BY id HAVING count(*) = 1)
+    AND id IN (SELECT id FROM snomed_full_SE1000052_$$release$$.concepts GROUP BY id HAVING count(*) = 1)
   GROUP BY hierarchies.conceptId, hierarchies.term
   ORDER BY hierarchies.displayOrder;
   `
   }
 ];
 
-queries.forEach(qy => {
-  app.get(qy.path, (req, res) => {
-    if (!req.query["release"]) {
-      throw "no release selected";
+  app.get('/query/:id/:release', (req, res) => {
+    if (!req.params['release'] || !req.params['id']) {
+      throw 'no release selected';
     }
-
-    const release = req.query["release"];
+    
+    const release = req.params['release'];
+    const id = req.params['id'];
 
     const releaseConnection = mysql.createConnection({
       host: "10.3.24.7",
@@ -41,22 +41,23 @@ queries.forEach(qy => {
       database: "snomed_full_SE1000052_" + release
     });
 
-    const query = qy.sql.replace('$$release$$', release);
+    const query = qy.sql.replace(/$$release$$/g, release);
+    console.log(query);
 
     releaseConnection.query(query, (err, results, fields) => {
       if (err) {
         throw err;
       }
   
-      res.render(qy.path, {
+      res.render(id, {
         release: release,
         results: results
       });
     });
   
-    releaseConnection.end();
+    releaseConnection.end(); */
   });
-});
+
 
 app.get("/", (req, res) => {
   const startConnection = mysql.createConnection({
@@ -117,7 +118,7 @@ app.get("/check-release", (req, res) => {
       throw err;
     }
 
-    res.render("genReleaseNotes", {
+    res.render("new-concepts", {
       release: req.query["release"],
       results: results
     });
