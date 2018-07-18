@@ -41,7 +41,9 @@ const queries = [
       database: "snomed_full_SE1000052_" + release
     });
 
-    const query = qy.sql.replace(/$$release$$/g, release);
+    const query = queries.find(e => {
+      return e.path == id;
+    }).replace(/$$release$$/g, release);
     console.log(query);
 
     releaseConnection.query(query, (err, results, fields) => {
@@ -55,7 +57,7 @@ const queries = [
       });
     });
   
-    releaseConnection.end(); */
+    releaseConnection.end();
   });
 
 
