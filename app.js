@@ -37,7 +37,7 @@ app.get('/check-release', (req, res) => {
     throw 'no release selected';
   }
 
-  let release = req.query['release'];
+  const release = req.query['release'];
 
   const releaseConnection = mysql.createConnection({
     host: '10.3.24.7',
