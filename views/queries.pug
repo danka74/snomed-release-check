@@ -4,6 +4,8 @@ html
     body
         h1 V&auml;lj fråga
 
-        for query in queries
-            a(href='/query/' + query.path + '/' + release) #{query.path}
+        ul
+            for query in queries
+                li
+                    a(href='/query/' + query.id + '/' + release) #{query.description}
     

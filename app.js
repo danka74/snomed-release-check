@@ -11,6 +11,7 @@ app.set("view engine", "pug");
 const queries = [
   {
     id: 'new-concepts',
+    description: 'Nya begrepp i releasen',
     sql: `
     SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
       JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
@@ -24,6 +25,7 @@ const queries = [
   },
   {
     id: 'changed-concepts',
+    description: 'Ändrade begrepp sedan förra releasen',
     sql: `
     SELECT count(*) AS ct FROM concepts
     WHERE moduleId = 45991000052106
