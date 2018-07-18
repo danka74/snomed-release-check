@@ -46,16 +46,19 @@ app.get('/check-release', (req, res) => {
     database: 'snomed_full_SE1000052_' + release
   });
 
-  releaseConnection.query(`
-    SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
-      JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
-      JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
-    WHERE active = 1
-      AND moduleId = 45991000052106
-      AND effectiveTime = ` + release + `
-      AND id IN (SELECT id FROM snomed_full_SE1000052_20180531.concepts GROUP BY id HAVING count(*) = 1)
-    GROUP BY hierarchies.conceptId, hierarchies.term
-    ORDER BY hierarchies.displayOrder;`, (err, results, fields) => {
+  const query = `
+  SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
+    JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
+    JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
+  WHERE active = 1
+    AND moduleId = 45991000052106
+    AND effectiveTime = ` + release + `
+    AND id IN (SELECT id FROM snomed_full_SE1000052_20180531.concepts GROUP BY id HAVING count(*) = 1)
+  GROUP BY hierarchies.conceptId, hierarchies.term
+  ORDER BY hierarchies.displayOrder;
+  `;
+
+  releaseConnection.query(query, (err, results, fields) => {
 
       if(err) {
         throw err;
@@ -66,6 +69,8 @@ app.get('/check-release', (req, res) => {
         results: results
       });
   });
+
+  releaseConnection.release();
 
 })
 
