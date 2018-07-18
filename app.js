@@ -11,15 +11,15 @@ app.set("view engine", "pug");
 
 const queries = [
   {
-    path: 'new-concepts',
+    path: 'new-concept',
     sql: `
   SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
     JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
     JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
   WHERE active = 1
     AND moduleId = 45991000052106
-    AND effectiveTime = $$release$$
-    AND id IN (SELECT id FROM snomed_full_SE1000052_$$release$$.concepts GROUP BY id HAVING count(*) = 1)
+    AND effectiveTime = __release__
+    AND id IN (SELECT id FROM snomed_full_SE1000052___release__.concepts GROUP BY id HAVING count(*) = 1)
   GROUP BY hierarchies.conceptId, hierarchies.term
   ORDER BY hierarchies.displayOrder;
   `
@@ -42,8 +42,8 @@ const queries = [
     });
 
     const query = queries.find(e => {
-      return e.path == id;
-    }).replace(/$$release$$/g, release);
+      return e.path === id;
+    }).sql.replace(/__release__/g, release);
     console.log(query);
 
     releaseConnection.query(query, (err, results, fields) => {
