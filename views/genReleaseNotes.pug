@@ -1,0 +1,10 @@
+html
+  head
+    title Snomed release #{results.release}
+
+body
+    table
+        for hierarchy in results
+            tr
+                td #{hierarchy.term}
+                td #{hierarchy.ct}

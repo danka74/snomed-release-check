@@ -3,6 +3,9 @@ html
     title V&auml;lj release
 
   body
-    for release in results
-      tr.odd(role='row')
-        td #(release)
+    form(action="/check-release", method="get")
+        label V&auml;lj release
+        select(name='release')
+            for release in results
+                option(value=release) #{release}
+        button(type="submit")
