@@ -37,11 +37,13 @@ app.get('/check-release', (req, res) => {
     throw 'no release selected';
   }
 
+  let release = req.query['release'];
+
   const releaseConnection = mysql.createConnection({
     host: '10.3.24.7',
     user: 'root',
     password: process.env.MYSQL_PASSWORD,
-    database: 'snomed_full_SE1000052_' + req.query['release']
+    database: 'snomed_full_SE1000052_' + release
   });
 
   releaseConnection.query(`
@@ -50,7 +52,7 @@ app.get('/check-release', (req, res) => {
       JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
     WHERE active = 1
       AND moduleId = 45991000052106
-      AND effectiveTime = 20180531
+      AND effectiveTime = ` + release + `
       AND id IN (SELECT id FROM snomed_full_SE1000052_20180531.concepts GROUP BY id HAVING count(*) = 1)
     GROUP BY hierarchies.conceptId, hierarchies.term
     ORDER BY hierarchies.displayOrder;`, (err, results, fields) => {
