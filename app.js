@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/check-release', (req, res) => {
-  if (!req.query.['release']) {
+  if (!req.query['release']) {
     throw 'no release selected';
   }
 
