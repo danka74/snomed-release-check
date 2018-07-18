@@ -1,0 +1,10 @@
+html
+    head
+        title  
+            V&auml;lj fråga
+    body
+        h1 V&auml;lj fråga
+
+        for query in queries
+            a(href='/query/' + query.path + '/' + release) query.path
+    

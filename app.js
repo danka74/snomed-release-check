@@ -11,7 +11,7 @@ app.set("view engine", "pug");
 
 const queries = [
   {
-    path: 'new-concept',
+    path: 'new-concepts',
     sql: `
   SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
     JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
@@ -28,7 +28,7 @@ const queries = [
 
   app.get('/query/:id/:release', (req, res) => {
     if (!req.params['release'] || !req.params['id']) {
-      throw 'no release selected';
+      throw 'missing parameters';
     }
     
     const release = req.params['release'];
@@ -93,40 +93,10 @@ app.get("/check-release", (req, res) => {
 
   const release = req.query["release"];
 
-  const releaseConnection = mysql.createConnection({
-    host: "10.3.24.7",
-    user: "root",
-    password: process.env.MYSQL_PASSWORD,
-    database: "snomed_full_SE1000052_" + release
+  res.render('queries', {
+    queries: queries,
+    release: release
   });
-
-  const query =
-    `
-  SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
-    JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
-    JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
-  WHERE active = 1
-    AND moduleId = 45991000052106
-    AND effectiveTime = ` +
-    release +
-    `
-    AND id IN (SELECT id FROM snomed_full_SE1000052_20180531.concepts GROUP BY id HAVING count(*) = 1)
-  GROUP BY hierarchies.conceptId, hierarchies.term
-  ORDER BY hierarchies.displayOrder;
-  `;
-
-  releaseConnection.query(query, (err, results, fields) => {
-    if (err) {
-      throw err;
-    }
-
-    res.render("new-concepts", {
-      release: req.query["release"],
-      results: results
-    });
-  });
-
-  releaseConnection.end();
 });
 
 app.listen(3000, () => {
