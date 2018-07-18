@@ -41,7 +41,7 @@ app.get('/check-release', (req, res) => {
     host: '10.3.24.7',
     user: 'root',
     password: process.env.MYSQL_PASSWORD,
-    database: req.query['release']
+    database: 'snomed_full_SE1000052_' + req.query['release']
   });
 
   releaseConnection.query(`
