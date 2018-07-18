@@ -29,7 +29,9 @@ app.get('/', (req, res) => {
     res.render('selectDB', {
       results: results
     });
-  })
+  });
+
+  startConnection.end();
 });
 
 app.get('/check-release', (req, res) => {
@@ -70,7 +72,7 @@ app.get('/check-release', (req, res) => {
       });
   });
 
-  releaseConnection.release();
+  releaseConnection.end();
 
 })
 
