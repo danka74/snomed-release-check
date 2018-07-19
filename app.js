@@ -10,7 +10,7 @@ app.set("view engine", "pug");
 
 const queries = require("./queries");
 
-app.get("/query/:id/:release/:param?", (req, res) => {
+app.get("/query/:id/:release/:prmtr?", (req, res) => {
   const release = req.params["release"];
   const id = req.params["id"];
 
@@ -31,7 +31,7 @@ app.get("/query/:id/:release/:param?", (req, res) => {
   var sqlQuery = query.sql.replace(/__release__/g, release);
 
   if (sqlQuery.indexOf('__param__') != -1) {
-    const param = req.params["param"];
+    const param = req.params["prmtr"];
     if(!param) {
       res.sendStatus(400);
       return;
