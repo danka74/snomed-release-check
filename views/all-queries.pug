@@ -1,0 +1,10 @@
+html
+    head
+        title Snomed release #{release} - Alla fr&aring;gor
+    body
+        h1 Alla fr&aring;gor
+
+        ul
+            for query in queries
+                iframe(src='/query/' + query.id + '/' + release)
+    

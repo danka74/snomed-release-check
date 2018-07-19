@@ -107,17 +107,17 @@ app.get("/check-release/:release", (req, res) => {
   });
 });
 
-app.get("/test1", (req, res) => {
-  res.send(
-    pug.render(
-      `html
-    body
-      h1 #{test1}`,
-      {
-        test1: "hejsan"
-      }
-    )
-  );
+app.get("/all-queries/:release", (req, res) => {
+  const release = req.params["release"];
+
+  if (!release) {
+    throw "no release selected";
+  }
+
+  res.render("all-queries", {
+    queries: queries.filter(q => { return q.sql.indexOf('__param__') == -1 }), // only queries without paramaters are meaningful here
+    release: release
+  });
 });
 
 app.listen(3000, () => {
