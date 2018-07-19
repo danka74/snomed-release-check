@@ -10,13 +10,14 @@ app.set("view engine", "pug");
 
 const queries = require("./queries");
 
-app.get("/query/:id/:release", (req, res) => {
-  if (!req.params["release"] || !req.params["id"]) {
-    throw "missing parameters";
-  }
-
+app.get("/query/:id/:release/:param?", (req, res) => {
   const release = req.params["release"];
   const id = req.params["id"];
+
+  if (!release || !id) {
+    res.sendStatus(400);
+    return;
+  }  
 
   const query = queries.find(e => {
     return e.id === id;
@@ -27,8 +28,28 @@ app.get("/query/:id/:release", (req, res) => {
     return;
   }
 
-  const sqlQuery = query.sql.replace(/__release__/g, release);
+  var sqlQuery = query.sql.replace(/__release__/g, release);
+
+  if (sqlQuery.indexOf('__param__') != -1) {
+    const param = req.params["param"];
+    if(!param) {
+      res.sendStatus(400);
+      return;
+    }  
+    sqlQuery = sqlQuery.replace(/__pararm__/g, param);
+  }
+
   //console.log(query);
+
+  var param = null;
+  if(query.paramRequired) {
+    param = req.params["param"];
+    if(!param) {
+      res.sendStatus(400);
+      return;
+    }
+    
+  }
 
   const releaseConnection = mysql.createConnection({
     host: "10.3.24.7",

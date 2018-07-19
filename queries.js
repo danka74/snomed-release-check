@@ -73,7 +73,7 @@ const queries = [
       id: 'refsets-with-inactive',
       description: 'Refsets med inaktiva begrepp',
       sql: `
-      SELECT simplerefsets_snap.refsetId, descriptions_snap.term, count(*) FROM simplerefsets_snap
+      SELECT simplerefsets_snap.refsetId, descriptions_snap.term, count(*) AS ct FROM simplerefsets_snap
         JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id
         JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
         JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
@@ -135,7 +135,7 @@ const queries = [
               p Inga refset med inaktiva begrepp`
       },
       {
-        id: 'inaktive-concepts-in-refsets',
+        id: 'inactive-concepts-in-refsets',
         description: 'Inaktiva begrepp som finns aktiva i refsets',
         sql: `
         SELECT simplerefsets_snap.refsetId, descriptions_snap.term, concepts_snap.id FROM simplerefsets_snap
@@ -146,13 +146,12 @@ const queries = [
             AND concepts_snap.active = 0
             AND languagerefsets_snap.acceptabilityId = 900000000000548007
             AND descriptions_snap.languageCode = 'sv'
-            AND descriptions_snap.active = 1
-        `,
+            AND descriptions_snap.active = 1`,
         pug: `html
         head
-          title Snomed release #{release} - Refsets med inaktiva begrepp
+          title Snomed release #{release} - Inaktiva begrepp i refsets
         body
-          h1 Refsets med inaktiva begrepp
+          h1 Inaktiva begrepp som finns aktiva i refsets i den svenska utg&aring;van
           if results.length
               table
                   tr
