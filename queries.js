@@ -77,10 +77,12 @@ const queries = [
         JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id
         JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
         JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
-      WHERE simplerefsets_snap.active = 1
-        AND concepts_snap.active = 0
+        WHERE simplerefsets_snap.active = 1
+        AND simplerefsets_snap.referencedComponentId IN (SELECT id FROM concepts_snap WHERE active = 0)
         AND languagerefsets_snap.acceptabilityId = 900000000000548007
-      GROUP BY simplerefsets_snap.refsetId, descriptions_snap.term;`,
+        AND descriptions_snap.languageCode = 'sv'
+        AND descriptions_snap.active = 1
+        GROUP BY simplerefsets_snap.refsetId, descriptions_snap.term;`,
       pug: `html
       head
         title Snomed release #{release} - Refsets med inaktiva begrepp
@@ -99,7 +101,72 @@ const queries = [
                     td refset.ct
         else
             p Inga refset med inaktiva begrepp`
-    }
-  ];
+    },
+    {
+        id: 'refsets-with-inactive2',
+        description: 'Refsets med inaktiva begrepp v2',
+        sql: `
+        SELECT simplerefsets_snap.refsetId, descriptions_snap.term, ifnull(count(concepts_snap.id), 0) AS ct FROM simplerefsets_snap
+            LEFT JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id AND concepts_snap.active = 0
+            JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
+            JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
+        WHERE simplerefsets_snap.active = 1
+            AND languagerefsets_snap.acceptabilityId = 900000000000548007
+            AND descriptions_snap.languageCode = 'sv'
+            AND descriptions_snap.active = 1
+        GROUP BY simplerefsets_snap.refsetId, descriptions_snap.term;`,
+        pug: `html
+        head
+          title Snomed release #{release} - Refsets med inaktiva begrepp
+        body
+          h1 Refsets med inaktiva begrepp
+          if results.length
+              table
+                  th 
+                  td Refset-Id
+                  td Namn
+                  td Antal inaktiva begrepp
+                  for refset in results
+                      tr
+                      td refset.refsetId
+                      td refset.term
+                      td refset.ct
+          else
+              p Inga refset med inaktiva begrepp`
+      },
+      {
+        id: 'inaktive-concepts-in-refsets',
+        description: 'Inaktiva begrepp som finns aktiva i refsets',
+        sql: `
+        SELECT simplerefsets_snap.refsetId, descriptions_snap.term, concepts_snap.id FROM simplerefsets_snap
+            JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id 
+            JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
+            JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
+        WHERE simplerefsets_snap.active = 1
+            AND concepts_snap.active = 0
+            AND languagerefsets_snap.acceptabilityId = 900000000000548007
+            AND descriptions_snap.languageCode = 'sv'
+            AND descriptions_snap.active = 1
+        `,
+        pug: `html
+        head
+          title Snomed release #{release} - Refsets med inaktiva begrepp
+        body
+          h1 Refsets med inaktiva begrepp
+          if results.length
+              table
+                  th 
+                  td Refset-Id
+                  td Namn
+                  td Begrepps-Id
+                  for refset in results
+                      tr
+                      td refset.refsetId
+                      td refset.term
+                      td refset.id
+          else
+              p Inga inaktiva begrepp i refsets`
+      }
+    ];
 
 module.exports = queries;
