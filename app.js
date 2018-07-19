@@ -27,10 +27,45 @@ const queries = [
     id: 'changed-concepts',
     description: 'Ändrade begrepp sedan förra releasen',
     sql: `
-    SELECT count(*) AS ct FROM concepts
+    SELECT 'changed', count(*) AS ct FROM concepts
     WHERE moduleId = 45991000052106
       AND effectiveTime = __release__
-      AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1);`
+      AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1)
+    UNION
+    SELECT 'inactivated', count(*) AS ct FROM concepts
+    WHERE moduleId = 45991000052106
+      AND effectiveTime = __release__
+      AND active = 0
+      AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1)`
+  },
+  {
+    id: 'descriptions',
+    description: 'Nya och borttagna beskrivningar',
+    sql: `
+    SELECT 'new translations', count(DISTINCT descriptions.id) AS ct FROM descriptions
+      JOIN concepts ON descriptions.conceptId = concepts.id
+    WHERE concepts.moduleId <> 45991000052106
+      AND descriptions.moduleId = 45991000052106
+      AND descriptions.effectiveTime = __release__
+      AND descriptions.languageCode = "sv"
+      AND descriptions.active = 1
+    UNION
+    SELECT 'new synonyms', count(*) AS ct FROM descriptions
+    WHERE active = 1
+      AND effectiveTime = __release__
+      AND conceptId IN (
+        SELECT conceptId FROM descriptions
+        WHERE active = 1
+          AND languageCode = "sv"
+        GROUP BY conceptId
+        HAVING count(id) > 1
+    )
+    UNION
+    SELECT 'inactivated descriptions', count(*) AS ct FROM descriptions
+    WHERE moduleId = 45991000052106
+      AND effectiveTime = __release__
+      AND languageCode = "sv"
+      AND active = 0;`
   },
   {
     id: 'non-translated',
@@ -112,12 +147,12 @@ app.get("/", (req, res) => {
   startConnection.end();
 });
 
-app.get("/check-release", (req, res) => {
-  if (!req.query["release"]) {
+app.get("/check-release/:release", (req, res) => {
+  if (!req.params["release"]) {
     throw "no release selected";
   }
 
-  const release = req.query["release"];
+  const release = req.params["release"];
 
   res.render('queries', {
     queries: queries,

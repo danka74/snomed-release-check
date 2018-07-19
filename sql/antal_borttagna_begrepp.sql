@@ -1,5 +1,5 @@
-SELECT count(*) FROM snomed_full_SE1000052_20180531.concepts
+SELECT count(*) FROM concepts
 WHERE moduleId = 45991000052106
   AND effectiveTime = 20180531
   AND active = 0
-  AND id IN (SELECT id FROM snomed_full_SE1000052_20180531.concepts GROUP BY id HAVING count(*) > 1)
+  AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1)

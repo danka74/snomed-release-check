@@ -3,9 +3,8 @@ html
     title V&auml;lj release
 
   body
-    form(action="/check-release", method="get")
-        label V&auml;lj release
-        select(name='release')
-            for release in results
-                option(value=release) #{release}
-        button(type="submit")
+    h1 V&auml;lj release
+      ul
+        for release in results
+            li
+              a(href='/check-release/' + release) #{release}

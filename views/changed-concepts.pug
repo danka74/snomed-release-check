@@ -3,6 +3,13 @@ html
     title Snomed release #{release} - &Auml;ndrade begrepp
 
 body
-    h1 &Auml;ndrade begrepp
-    p Antal begrepp i den svenska utg&aring;van som &auml;ndrats sedan tidigare release är #{results[0].ct}.
+    h1 &Auml;ndrade och inaktiverade begrepp
+    p &Auml;ndrade och inaktiverade begrepp in den svenska utg&aring;van.
+    table
+      tr
+        td &Auml;ndrade begrepp
+        td #{results[0].ct}
+      tr
+        td Inaktiverade begrepp
+        td  #{results[1].ct}
     

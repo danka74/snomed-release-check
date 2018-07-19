@@ -1,0 +1,18 @@
+html
+  head
+    title Snomed release #{release} - Beskrivningar
+
+body
+    h1 Nya och ändrade beskrivningar
+    p Nya och ändrade beskrivningar in den svenska utg&aring;van.
+    table
+      tr
+        td Nya översättningar
+        td #{results[0].ct}
+      tr
+        td Nya synonymer
+        td  #{results[1].ct}
+      tr
+        td Inaktiverade beskrivningar
+        td  #{results[2].ct}
+    
