@@ -90,10 +90,10 @@ const queries = [
         h1 Refsets med inaktiva begrepp
         if results.length
             table
-                th 
-                    td RefsetId
-                    td Namn
-                    td Antal inaktiva begrepp
+                tr 
+                    th RefsetId
+                    th Namn
+                    th Antal inaktiva begrepp
                 for refset in results
                     tr
                         td #{refset.refsetId}
@@ -122,10 +122,10 @@ const queries = [
           h1 Refsets med inaktiva begrepp
           if results.length
               table
-                  th 
-                    td Refset-Id
-                    td Namn
-                    td Antal inaktiva begrepp
+                  tr
+                    th Refset-Id
+                    th Namn
+                    th Antal inaktiva begrepp
                   for refset in results
                       tr
                         td #{refset.refsetId}
@@ -155,10 +155,10 @@ const queries = [
           h1 Refsets med inaktiva begrepp
           if results.length
               table
-                  th 
-                    td Refset-Id
-                    td Namn
-                    td Begrepps-Id
+                  tr
+                    th Refset-Id
+                    th Namn
+                    th Begrepps-Id
                   for refset in results
                       tr
                         td #{refset.refestId}
