@@ -203,6 +203,27 @@ INSERT INTO hierarchies (conceptId, displayOrder) VALUES (105590001, 10);
 INSERT INTO hierarchies (conceptId, displayOrder) VALUES (410607006, 11);
 INSERT INTO hierarchies (conceptId, displayOrder) VALUES (260787004, 12);
 
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (138875005, 1);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (254291000, 2);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (260787004, 3);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (272379006, 4);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (308916002, 5);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (123037004, 6);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (123038009, 7);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (48176007, 8);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (71388002, 9);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (78621006, 10);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (362981000, 11);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (363787002, 12);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (370115009, 13);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (105590001, 14);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (243796009, 15);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (373873005, 16);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (404684003, 17);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (410607006, 18);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (419891008, 19);
+INSERT INTO hierarchies (conceptId, displayOrder) VALUES (900000000000441003, 20);
+
 UPDATE hierarchies
   JOIN descriptions_snap ON hierarchies.conceptId = descriptions_snap.conceptId
   JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
@@ -210,7 +231,7 @@ SET hierarchies.term = descriptions_snap.term
 WHERE languageCode = "sv"
   AND languagerefsets_snap.acceptabilityId = 900000000000548007
   AND descriptions_snap.active = 1
-  AND languagerefsets_snap.active = 1
+  AND languagerefsets_snap.active = 1;
 
 " | mysql --user=root --password=$MYSQL_PASSWORD --local-infile
 
