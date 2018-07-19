@@ -44,7 +44,7 @@ const queries = [
       WHERE active = 1
         AND effectiveTime = __release__
         AND conceptId IN (
-          SELECT conceptId FROM descriptions
+          SELECT conceptId FROM descriptions_snap
           WHERE active = 1
             AND languageCode = 'sv'
           GROUP BY conceptId
