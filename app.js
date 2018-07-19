@@ -41,16 +41,6 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
 
   //console.log(query);
 
-  var param = null;
-  if(query.paramRequired) {
-    param = req.params["param"];
-    if(!param) {
-      res.sendStatus(400);
-      return;
-    }
-    
-  }
-
   const releaseConnection = mysql.createConnection({
     host: "10.3.24.7",
     user: "root",
