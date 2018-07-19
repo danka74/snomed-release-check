@@ -96,9 +96,9 @@ const queries = [
                 td Antal inaktiva begrepp
                 for refset in results
                     tr
-                    td refset.id
-                    td refset.term
-                    td refset.ct
+                    td #{refset.refsetId}
+                    td #{refset.term}
+                    td #{refset.ct}
         else
             p Inga refset med inaktiva begrepp`
     },
@@ -128,9 +128,9 @@ const queries = [
                   td Antal inaktiva begrepp
                   for refset in results
                       tr
-                      td refset.refsetId
-                      td refset.term
-                      td refset.ct
+                      td #{refset.refsetId}
+                      td #{refset.term}
+                      td #{refset.ct}
           else
               p Inga refset med inaktiva begrepp`
       },
@@ -161,9 +161,9 @@ const queries = [
                   td Begrepps-Id
                   for refset in results
                       tr
-                      td refset.refsetId
-                      td refset.term
-                      td refset.id
+                      td #{refset.refestId}
+                      td #{refset.term}
+                      td #{refset.id}
           else
               p Inga inaktiva begrepp i refsets`
       }
