@@ -14,9 +14,10 @@ const queries = require("./queries");
 app.get("/query/:id/:release/:prmtr?", (req, res) => {
   const release = req.params["release"];
   const id = req.params["id"];
+  const param = req.params["prmtr"];
 
   if (!release || !id) {
-    res.sendStatus(400);
+    res.status(400).send('Release and id needs to be specified');
     return;
   }  
 
@@ -27,7 +28,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
 
   // if the query id could not be found
   if (!query) {
-    res.sendStatus(404);
+    res.status(404).send('Cannot find query id');
     return;
   }
 
@@ -36,9 +37,8 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
 
   // if the SQL query has a parameter, replace that with the input parameter
   if (sqlQuery.indexOf('__param__') != -1) {
-    const param = req.params["prmtr"];
     if(!param) {
-      res.sendStatus(400);
+      res.status(400).send('Missing parameter');
       return;
     }  
     sqlQuery = sqlQuery.replace(/__pararm__/g, param);
@@ -121,7 +121,7 @@ app.get("/check-release/:release", (req, res) => {
   const release = req.params["release"];
 
   if (!release) {
-    res.sendStatus(400);
+    res.status(400).send('Release needs to be specified');
     return;
   }
 
@@ -135,7 +135,7 @@ app.get("/all-queries/:release", (req, res) => {
   const release = req.params["release"];
 
   if (!release) {
-    res.sendStatus(400);
+    res.status(400).send('Release needs to be specified');
     return;
   }
 
