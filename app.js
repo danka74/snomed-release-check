@@ -78,6 +78,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
           results: results
         });
       }
+      return;
     }
 
     // if client accepts JSON then send JSON
