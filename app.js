@@ -10,6 +10,7 @@ app.set("view engine", "pug");
 
 const queries = require("./queries");
 
+// specific queries (id, used to identify queries) for a specific release, possibly with a parameter
 app.get("/query/:id/:release/:prmtr?", (req, res) => {
   const release = req.params["release"];
   const id = req.params["id"];
@@ -19,17 +20,21 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
     return;
   }  
 
+  // find the query object correspondning to the id
   const query = queries.find(e => {
     return e.id === id;
   });
 
+  // if the query id could not be found
   if (!query) {
     res.sendStatus(404);
     return;
   }
 
+  // insert release date into SQL query
   var sqlQuery = query.sql.replace(/__release__/g, release);
 
+  // if the SQL query has a parameter, replace that with the input parameter
   if (sqlQuery.indexOf('__param__') != -1) {
     const param = req.params["prmtr"];
     if(!param) {
@@ -53,6 +58,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
       throw err;
     }
 
+    // if the query object contains pug template, use that for rendering, otherwise use a file with the same name as the id
     if (query.pug) {
       res.send(pug.render(query.pug, {
         release: release,
@@ -69,6 +75,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
   releaseConnection.end();
 });
 
+// start page, select release
 app.get("/", (req, res) => {
   const startConnection = mysql.createConnection({
     host: "10.3.24.7",
@@ -83,7 +90,7 @@ app.get("/", (req, res) => {
     }
 
     results = results
-      .filter(db => db.Database.startsWith("snomed_full"))
+      .filter(db => db.Database.startsWith("snomed_full_"))
       .map(db => db.Database.substr(db.Database.lastIndexOf("_") + 1));
 
     res.render("select-db", {
@@ -94,11 +101,13 @@ app.get("/", (req, res) => {
   startConnection.end();
 });
 
+// show list of queries available
 app.get("/check-release/:release", (req, res) => {
   const release = req.params["release"];
 
   if (!release) {
-    throw "no release selected";
+    res.sendStatus(400);
+    return;
   }
 
   res.render("queries", {
@@ -111,7 +120,8 @@ app.get("/all-queries/:release", (req, res) => {
   const release = req.params["release"];
 
   if (!release) {
-    throw "no release selected";
+    res.sendStatus(400);
+    return;
   }
 
   res.render("all-queries", {
