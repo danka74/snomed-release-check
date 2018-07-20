@@ -17,9 +17,9 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
   const param = req.params["prmtr"];
 
   if (!release || !id) {
-    res.status(400).send('Release and id needs to be specified');
+    res.status(400).send("Release and id needs to be specified");
     return;
-  }  
+  }
 
   // find the query object correspondning to the id
   const query = queries.find(e => {
@@ -28,7 +28,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
 
   // if the query id could not be found
   if (!query) {
-    res.status(404).send('Cannot find query id');
+    res.status(404).send("Cannot find query id");
     return;
   }
 
@@ -36,11 +36,11 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
   var sqlQuery = query.sql.replace(/__release__/g, release);
 
   // if the SQL query has a parameter, replace that with the input parameter
-  if (sqlQuery.indexOf('__param__') != -1) {
-    if(!param) {
-      res.status(400).send('Missing parameter');
+  if (sqlQuery.indexOf("__param__") != -1) {
+    if (!param) {
+      res.status(400).send("Missing parameter");
       return;
-    }  
+    }
     sqlQuery = sqlQuery.replace(/__pararm__/g, param);
   }
 
@@ -58,6 +58,28 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
       throw err;
     }
 
+    // if client accepts HTML, send HTML
+    if (req.accepts("text/html")) {
+      // if the query object contains pug template, use that for rendering, otherwise use a file with the same name as the id
+      if (query.pug) {
+        res.send(
+          pug.render(query.pug, {
+            queryId: id,
+            release: release,
+            parameter: param ? param : null,
+            results: results
+          })
+        );
+      } else {
+        res.render(id, {
+          queryId: id,
+          release: release,
+          parameter: param ? param : null,
+          results: results
+        });
+      }
+    }
+
     // if client accepts JSON then send JSON
     if (req.accepts("application/json")) {
       res.json({
@@ -69,22 +91,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
       return;
     }
 
-    // if the query object contains pug template, use that for rendering, otherwise use a file with the same name as the id
-    if (query.pug) {
-      res.send(pug.render(query.pug,{
-        queryId: id,
-        release: release,
-        parameter: param ? param : null,
-        results: results
-      }));
-    } else {
-      res.render(id, {
-        queryId: id,
-        release: release,
-        parameter: param ? param : null,
-        results: results
-      });
-    }
+    res.status(405).send('Only text/html and application/json allowed');
   });
 
   releaseConnection.end();
@@ -121,7 +128,7 @@ app.get("/check-release/:release", (req, res) => {
   const release = req.params["release"];
 
   if (!release) {
-    res.status(400).send('Release needs to be specified');
+    res.status(400).send("Release needs to be specified");
     return;
   }
 
@@ -135,12 +142,14 @@ app.get("/all-queries/:release", (req, res) => {
   const release = req.params["release"];
 
   if (!release) {
-    res.status(400).send('Release needs to be specified');
+    res.status(400).send("Release needs to be specified");
     return;
   }
 
   res.render("all-queries", {
-    queries: queries.filter(q => { return q.sql.indexOf('__param__') == -1 }), // only queries without paramaters are meaningful here
+    queries: queries.filter(q => {
+      return q.sql.indexOf("__param__") == -1;
+    }), // only queries without paramaters are meaningful here
     release: release
   });
 });
