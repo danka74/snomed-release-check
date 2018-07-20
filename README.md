@@ -49,7 +49,7 @@ Queries to check the release are stored in the file `quieries.js` where an array
 
 E.g.:
 
-```json
+```javascript
 {
       id: 'new-concepts',
       description: 'New concepts in this release',
