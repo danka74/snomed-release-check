@@ -80,7 +80,9 @@ relationshipGroup TINYINT UNSIGNED NOT NULL,
 typeId BIGINT UNSIGNED NOT NULL,
 characteristicTypeId BIGINT UNSIGNED NOT NULL,
 modifierId BIGINT UNSIGNED NOT NULL,
-PRIMARY KEY (id, effectiveTime)
+PRIMARY KEY (id, effectiveTime),
+KEY sourceId (sourceId),
+KEY destionationId (destionationId)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/sct2_Relationship_Full_INT_$DATE_INT.txt' INTO TABLE relationships IGNORE 1 LINES;
@@ -189,19 +191,6 @@ term CHAR(255),
 displayOrder INT,
 PRIMARY KEY (conceptId)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (138875005, 1);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (404684003, 2);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (71388002, 3);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (123037004, 4);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (123038009, 5);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (254291000, 6);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (373873005, 7);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (243796009, 8);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (362981000, 9);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (105590001, 10);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (410607006, 11);
-INSERT INTO hierarchies (conceptId, displayOrder) VALUES (260787004, 12);
 
 INSERT INTO hierarchies (conceptId, displayOrder) VALUES (138875005, 1);
 INSERT INTO hierarchies (conceptId, displayOrder) VALUES (254291000, 2);
