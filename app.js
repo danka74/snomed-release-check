@@ -58,15 +58,30 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
       throw err;
     }
 
+    // if client accepts JSON then send JSON
+    if (req.accepts("application/json")) {
+      res.json({
+        queryId: id,
+        release: release,
+        parameter: param ? param : null,
+        results: results
+      });
+      return;
+    }
+
     // if the query object contains pug template, use that for rendering, otherwise use a file with the same name as the id
     if (query.pug) {
-      res.send(pug.render(query.pug, {
+      res.send(pug.render(query.pug,{
+        queryId: id,
         release: release,
+        parameter: param ? param : null,
         results: results
       }));
     } else {
       res.render(id, {
+        queryId: id,
         release: release,
+        parameter: param ? param : null,
         results: results
       });
     }
