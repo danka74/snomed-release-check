@@ -1,6 +1,6 @@
 # snomed-release-check
 
-Check release for SNOMED CT releases with an extension.
+Check release for SNOMED CT releases with an extension. Fork it and adapt to your own extension!
 
 ## Requirements
 
