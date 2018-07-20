@@ -34,10 +34,18 @@ The database contains a full release of SNOMED CT and has the following tables:
 * transitiveclosure - contains the transitive closeure of the `Is A`-relationship for the current release. Primary key is `subtypeId`, `supertypeId`. Indexes for `subtypeId` and `supertypeId` and `pathLength`.
 * simplerefsets - contains all simple refsets in the `Full/Refset/Content/` folder. Primary key is `id` and `effectiveTime`. Index for `referencedComponentId`.
 
+Views are created for making queries for a snapshot of the most recent release:
+
+* concepts_snap
+* descriptions_snap
+* relationships_snap
+* languagerefsets_snap
+* simplerefsets_snap
+
 
 ## Adding/changing queries
 
-Queries to check the release are stored in the file `quieries.js` where an array contains all query objects. A query object has four elements: `id`, `description`, `sql`, `pug`. Queries are called through the URL `http://<server>/query/<id>/<release>/<parameter>?`. In the SQL string, the substring `"__release__"` is replaced with the release data, e.g. `20180531` and the string `"__param__"` is replaced with the value of the parameter in the URL. HTML rendering of results is done using pug, see [documentation](http://pugjs.org). The results from the SQL query is passed in the `results` variable and the release date is passed to pug in the `release` variable.
+Queries to check the release are stored in the file `quieries.js` where an array contains all query objects. A query object has four elements: `id`, `description`, `sql`, `pug`. Queries are called through the URL `http://<server>/query/<id>/<release>/<parameter>?`. In the SQL string, the substring `"__release__"` is replaced with the release data, e.g. `20180531` and the string `"__param__"` is replaced with the value of the parameter in the URL. HTML rendering of results is done using pug, see [documentation](http://pugjs.org). The results from the SQL query is passed in the `results` variable and the query id, any parameter, and release date is passed to pug in the `id`, `parameter`, and `release` variables.
 
 E.g.:
 
