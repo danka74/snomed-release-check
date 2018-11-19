@@ -39,6 +39,7 @@ const queries = [
         AND descriptions.effectiveTime = __release__
         AND descriptions.languageCode = 'sv'
         AND descriptions.active = 1
+        AND descriptions.id NOT IN (SELECT id FROM descriptions WHERE descriptions.moduleId = 45991000052106 AND descriptions.effectiveTime < 20181130)
       UNION
       SELECT 'new synonyms', count(*) AS ct FROM descriptions
       WHERE active = 1
