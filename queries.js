@@ -166,6 +166,38 @@ const queries = [
                         td #{refset.id}
           else
               p Inga inaktiva begrepp i refsets`
+      },
+      {
+        id: 'duplicate-descriptions',
+        description: 'Beskrivningar som förekommer för fler än ett begrepp med samma semantiska etikett',
+        sql: `
+        SELECT term, semtag, count(descriptions_snap.id) AS ct
+        FROM descriptions_snap
+          JOIN concepts_snap2 ON descriptions_snap.conceptId = concepts_snap2.id
+        WHERE languageCode = "sv" 
+          AND concepts_snap2.active = 1
+          AND descriptions_snap.active = 1
+        GROUP BY term, semtag
+        HAVING count(descriptions_snap.id) > 1
+        ORDER BY ct DESC`,
+        pug: `html
+        head
+          title Snomed release #{release} - Dubletter
+        body
+          h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          if results.length
+              table
+                  tr
+                    th Term
+                    th Semantisk etikett
+                    th Antal
+                  for desc in results
+                      tr
+                        td #{desc.term}
+                        td #{desc.semtag}
+                        td #{desc.ct}
+          else
+              p Inga inaktiva begrepp i refsets`
       }
     ];
 
