@@ -50,7 +50,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
     host: "10.3.24.7",
     user: "root",
     password: process.env.MYSQL_PASSWORD,
-    database: "snomed_full_SE1000052_" + release // TODO: here the Swedish extension ID is hardcoded!
+    database: release
   });
 
   releaseConnection.query(sqlQuery, (err, results, fields) => {
@@ -113,8 +113,8 @@ app.get("/", (req, res) => {
     }
 
     results = results
-      .filter(db => db.Database.startsWith("snomed_full_"))
-      .map(db => db.Database.substr(db.Database.lastIndexOf("_") + 1));
+      .filter(db => db.Database.startsWith("snomed_full_") || db.Database.startsWith("xsnomed_full_"))
+      .map(db => db.Database);
 
     res.render("select-db", {
       results: results
