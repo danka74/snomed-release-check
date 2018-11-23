@@ -62,7 +62,7 @@ const queries = [
       id: 'non-translated',
       description: 'Icke-översatta begrepp efter hierarki',
       sql: `
-      SELECT hierarchies.term, count(concepts_snap.id) AS ct FROM concepts_snap
+      SELECT hierarchies.fsn, count(concepts_snap.id) AS ct FROM concepts_snap
         JOIN transitiveclosure ON concepts_snap.id = transitiveclosure.subtypeId
         JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
       WHERE active = 1 
