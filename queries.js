@@ -3,7 +3,7 @@ const queries = [
       id: 'new-concepts',
       description: 'Nya begrepp i releasen',
       sql: `
-      SELECT hierarchies.term, count(concepts.id) AS ct FROM concepts
+      SELECT hierarchies.fsn, count(concepts.id) AS ct FROM concepts
         JOIN transitiveclosure ON concepts.id = transitiveclosure.subtypeId
         JOIN hierarchies ON transitiveclosure.supertypeId = hierarchies.conceptId
       WHERE active = 1
