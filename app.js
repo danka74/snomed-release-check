@@ -33,7 +33,7 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
   }
 
   // insert release date into SQL query
-  var sqlQuery = query.sql.replace(/__release__/g, release);
+  var sqlQuery = query.sql.replace(/__release__/g, substr(release.lastIndexOf("_") + 1));
 
   // if the SQL query has a parameter, replace that with the input parameter
   if (sqlQuery.indexOf("__param__") != -1) {
