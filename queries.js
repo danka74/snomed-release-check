@@ -193,11 +193,49 @@ const queries = [
                     th Antal
                   for desc in results
                       tr
-                        td #{desc.term}
+                        td 
+                          a(href='/query/concept-duplicate/#{release}/#{desc.term}') #{desc.term}
                         td #{desc.semtag}
                         td #{desc.ct}
           else
-              p Inga inaktiva begrepp i refsets`
+              p Inga dubletter`
+      },
+      {
+        id: 'concept-duplicate',
+        nested: true,
+        sql: `
+        SELECT concepts_snap.id, term
+        FROM concepts_snap
+          JOIN descriptions_snap ON concepts_snap.id = descriptions_snap.conceptId
+        WHERE concepts_snap.active = 1
+          AND descriptions_snap.active = 1
+          AND descriptions_snap.moduleId = 45991000052106
+          AND term = __param__;
+        `
+      }
+      {
+        id: 'active-langrefset-inactive-descriptions',
+        description: 'Aktiva medlemmar i language refsets som pekar på inaktiva beskrivningar',
+        sql: `
+        SELECT 
+            COUNT(*) AS ct
+        FROM
+            descriptions_snap d
+                JOIN
+            languagerefsets_snap l ON d.id = l.referencedComponentId
+        WHERE
+            d.active = 0 AND l.active = 1`,
+        pug: `html
+        head
+          title Snomed release #{release} - Aktiva i language refset med inaktiva beskrivningar
+        body
+          h1 Aktiva medlemmar i language refsets som pekar på inaktiva beskrivningar
+          table
+              tr
+                th Antal
+              for desc in results
+                  tr
+                    td #{desc.ct}
       }
     ];
 

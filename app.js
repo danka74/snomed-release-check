@@ -134,7 +134,9 @@ app.get("/check-release/:release", (req, res) => {
   }
 
   res.render("queries", {
-    queries: queries,
+    queries: queries.filter(q => {
+      return q.nested == true || q.sql.indexOf("__param__") == -1;
+    }),
     release: release
   });
 });
@@ -149,8 +151,8 @@ app.get("/all-queries/:release", (req, res) => {
 
   res.render("all-queries", {
     queries: queries.filter(q => {
-      return q.sql.indexOf("__param__") == -1;
-    }), // only queries without paramaters are meaningful here
+      return q.nested == true || q.sql.indexOf("__param__") == -1;
+    }), // only non-nested queries without paramaters are meaningful here
     release: release
   });
 });
