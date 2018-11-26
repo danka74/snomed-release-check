@@ -251,7 +251,7 @@ const queries = [
                 th Antal
               for desc in results
                   tr
-                    td #{desc.ct}
+                    td #{desc.ct}`
       }
     ];
 
