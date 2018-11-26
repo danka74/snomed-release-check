@@ -211,8 +211,24 @@ const queries = [
           AND descriptions_snap.active = 1
           AND descriptions_snap.moduleId = 45991000052106
           AND term = __param__;
-        `
-      }
+        `,
+        pug: `html
+        head
+          title Snomed release #{release} - Dubletter
+        body
+          h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          if results.length
+              table
+                  tr
+                    th Id
+                    th Term
+                  for c in results
+                      tr
+                        td #{c.id}
+                        td #{c.term}
+          else
+              p Inga dubletter`
+      },
       {
         id: 'active-langrefset-inactive-descriptions',
         description: 'Aktiva medlemmar i language refsets som pekar på inaktiva beskrivningar',
