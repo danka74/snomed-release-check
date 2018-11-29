@@ -194,7 +194,7 @@ const queries = [
                   for desc in results
                       tr
                         td 
-                          a(href='/query/concept-duplicate/#{release}/#{desc.term}') #{desc.term}
+                          a(href='/query/concept-duplicate/' + release + '/' + desc.term) #{desc.term}
                         td #{desc.semtag}
                         td #{desc.ct}
           else
