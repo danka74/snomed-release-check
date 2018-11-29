@@ -177,7 +177,7 @@ const queries = [
         WHERE languageCode = "sv" 
           AND concepts_snap2.active = 1
           AND descriptions_snap.active = 1
-        GROUP BY term, semtag
+        GROUP BY BINARY term, term, semtag
         HAVING count(descriptions_snap.id) > 1
         ORDER BY ct DESC`,
         pug: `html
@@ -210,7 +210,7 @@ const queries = [
         WHERE concepts_snap.active = 1
           AND descriptions_snap.active = 1
           AND descriptions_snap.moduleId = 45991000052106
-          AND term = __param__;
+          AND term = '__param__';
         `,
         pug: `html
         head
@@ -220,7 +220,7 @@ const queries = [
           if results.length
               table
                   tr
-                    th Id
+                    th Begrepps-id
                     th Term
                   for c in results
                       tr

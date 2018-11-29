@@ -16,6 +16,8 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
   const id = req.params["id"];
   const param = req.params["prmtr"];
 
+  console.log(param);
+
   if (!release || !id) {
     res.status(400).send("Release and id needs to be specified");
     return;
@@ -41,10 +43,10 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
       res.status(400).send("Missing parameter");
       return;
     }
-    sqlQuery = sqlQuery.replace(/__pararm__/g, param);
+    sqlQuery = sqlQuery.replace(/__param__/g, param);
   }
 
-  //console.log(query);
+  console.log(sqlQuery);
 
   const releaseConnection = mysql.createConnection({
     host: "10.3.24.7",
@@ -135,7 +137,7 @@ app.get("/check-release/:release", (req, res) => {
 
   res.render("queries", {
     queries: queries.filter(q => {
-      return q.nested == true || q.sql.indexOf("__param__") == -1;
+      return !(q.nested == true) || q.sql.indexOf("__param__") == -1;
     }),
     release: release
   });
