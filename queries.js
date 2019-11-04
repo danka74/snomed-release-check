@@ -147,7 +147,8 @@ const queries = [
             AND concepts_snap.active = 0
             AND languagerefsets_snap.acceptabilityId = 900000000000548007
             AND descriptions_snap.languageCode = 'sv'
-            AND descriptions_snap.active = 1`,
+            AND descriptions_snap.active = 1
+	ORDER BY refsetId, term`,
         pug: `html
         head
           title Snomed release #{release} - Inaktiva begrepp i refsets
@@ -161,7 +162,7 @@ const queries = [
                     th Begrepps-Id
                   for refset in results
                       tr
-                        td #{refset.refestId}
+                        td #{refset.refsetId}
                         td #{refset.term}
                         td #{refset.id}
           else
