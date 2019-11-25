@@ -8,15 +8,18 @@ DIR_EXT=$2
 DATE_INT=`echo $DIR_INT | cut -d'_' -f 4 | cut -d'T' -f 1`
 DATE_EXT=`echo $DIR_EXT | cut -d'_' -f 4-5 | cut -d'T' -f 1`
 if [[ $DIR_EXT == x* ]] ; then PRE='x'; else PRE=''; fi
+if [[ $DIR_INT == x* ]] ; then IPRE='x'; else IPRE=''; fi
 
 CUR_DIR=`pwd`
 
-if [[ $2 -ne 0 ]] ; then
+if [ -e $2 ] ; then
 	DBNAME="${PRE}snomed_full_$DATE_EXT";
 else
 	DBNAME="snomed_full_$DATE_INT";
 fi;
 
+echo "Database name used:"
+echo $DBNAME
 
 # create database and tables
 echo "
@@ -96,6 +99,21 @@ CREATE TABLE simplerefsets(
   PRIMARY KEY (id, effectiveTime),
   KEY referencedComponentId (referencedComponentId)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+DROP TABLE IF EXISTS refsetdescriptors;
+CREATE TABLE refsetdescriptors(
+  id CHAR(36) COLLATE utf8_unicode_ci NOT NULL,
+  effectiveTime INT NOT NULL,
+  active BOOL NOT NULL,
+  moduleId BIGINT(20) UNSIGNED NOT NULL,
+  refsetId BIGINT(20) UNSIGNED NOT NULL,
+  referencedComponentId BIGINT(20) UNSIGNED NOT NULL,
+  attributeDescription BIGINT(20) UNSIGNED NOT NULL,
+  attributeType BIGINT(20) UNSIGNED NOT NULL,
+  attributeOrder INT UNSIGNED NOT NULL,
+  PRIMARY KEY (id, effectiveTime)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 " | mysql --user=root --password=$MYSQL_PASSWORD --local-infile
 
 # load international files
@@ -103,20 +121,22 @@ echo "
 USE $DBNAME;
 
 \! echo ""concepts int""
-LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/sct2_Concept_Full_INT_$DATE_INT.txt' INTO TABLE concepts IGNORE 1 LINES (Id, effectiveTime, active, moduleId, definitionStatusId);
+LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/${IPRE}sct2_Concept_Full_INT_$DATE_INT.txt' INTO TABLE concepts IGNORE 1 LINES (Id, effectiveTime, active, moduleId, definitionStatusId);
 
 \! echo ""descriptions int""
-LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/sct2_Description_Full-en_INT_$DATE_INT.txt' INTO TABLE descriptions IGNORE 1 LINES;
+LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/${IPRE}sct2_Description_Full-en_INT_$DATE_INT.txt' INTO TABLE descriptions IGNORE 1 LINES;
 
 \! echo ""relationships int""
-LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/sct2_Relationship_Full_INT_$DATE_INT.txt' INTO TABLE relationships IGNORE 1 LINES;
+LOAD DATA LOCAL INFILE '$DIR_INT/Full/Terminology/${IPRE}sct2_Relationship_Full_INT_$DATE_INT.txt' INTO TABLE relationships IGNORE 1 LINES;
 
-LOAD DATA LOCAL INFILE '$DIR_INT/Full/Refset/Language/der2_cRefset_LanguageFull-en_INT_$DATE_INT.txt' INTO TABLE languagerefsets IGNORE 1 LINES;
+LOAD DATA LOCAL INFILE '$DIR_INT/Full/Refset/Language/${IPRE}der2_cRefset_LanguageFull-en_INT_$DATE_INT.txt' INTO TABLE languagerefsets IGNORE 1 LINES;
+
+LOAD DATA LOCAL INFILE '$DIR_INT/Full/Refset/Metadata/${IPRE}der2_cciRefset_RefsetDescriptorFull_INT_$DATE_INT.txt' INTO TABLE refsetdescriptors IGNORE 1 LINES;
 " | mysql --user=root --password=$MYSQL_PASSWORD --local-infile
 
 
 # load extension files
-if [[ $2 -ne 0 ]] ; then
+if [[ -n $2 ]] ; then
 echo "
 USE $DBNAME;
 
@@ -133,6 +153,8 @@ LOAD DATA LOCAL INFILE '$DIR_EXT/Full/Terminology/${PRE}sct2_Relationship_Full_$
 \! echo ""languagerefsets ext""
 LOAD DATA LOCAL INFILE '$DIR_EXT/Full/Refset/Language/${PRE}der2_cRefset_LanguageFull-en_$DATE_EXT.txt' INTO TABLE languagerefsets IGNORE 1 LINES;
 LOAD DATA LOCAL INFILE '$DIR_EXT/Full/Refset/Language/${PRE}der2_cRefset_LanguageFull-sv_$DATE_EXT.txt' INTO TABLE languagerefsets IGNORE 1 LINES;
+
+LOAD DATA LOCAL INFILE '$DIR_EXT/Full/Refset/Metadata/${PRE}der2_cciRefset_RefsetDescriptorFull_$DATE_EXT.txt' INTO TABLE refsetdescriptors IGNORE 1 LINES;
 
 " | mysql --user=root --password=$MYSQL_PASSWORD --local-infile
 fi;
@@ -173,7 +195,9 @@ FROM relationships r1
 GROUP BY id) r2 ON r1.id = r2.id AND r1.effectiveTime = r2.maxTime; 
 
 ALTER TABLE relationships_snap
-ADD PRIMARY KEY (id);
+ADD PRIMARY KEY (id),
+ADD INDEX sourceId (sourceId ASC),
+ADD INDEX destinationId (destinationId ASC);
 
 DROP TABLE IF EXISTS descriptions_snap;
 CREATE TABLE descriptions_snap AS
@@ -198,16 +222,15 @@ ALTER TABLE languagerefsets_snap
 ADD PRIMARY KEY (id),
 ADD INDEX referencedComponentId (referencedComponentId ASC);
 
-DROP TABLE IF EXISTS simplerefsets_snap;
-CREATE TABLE simplerefsets_snap AS
+DROP TABLE IF EXISTS refsetdescriptors_snap;
+CREATE TABLE refsetdescriptors_snap AS
 SELECT d1.*
-FROM simplerefsets d1
-  JOIN (SELECT id, max(effectiveTime) as maxTime FROM simplerefsets
+FROM refsetdescriptors d1
+  JOIN (SELECT id, max(effectiveTime) as maxTime FROM refsetdescriptors
 GROUP BY id) d2 ON d1.id = d2.id AND d1.effectiveTime = d2.maxTime;
 
-ALTER TABLE simplerefsets_snap
-ADD PRIMARY KEY (id),
-ADD INDEX referencedComponentId (referencedComponentId ASC);
+ALTER TABLE refsetdescriptors_snap
+ADD PRIMARY KEY (id);
 
 \! echo ""transitiveclosure""
 DROP TABLE IF EXISTS transitiveclosure;
@@ -287,7 +310,7 @@ WHERE languageCode = 'en'
 
 
 cd $CUR_DIR/$DIR_INT/Full/Refset/Content
-for file in der2_Refset_*
+for file in ${IPRE}der2_Refset_*
 do
 	mysql -e "LOAD DATA LOCAL INFILE '$file' INTO TABLE simplerefsets IGNORE 1 LINES" -u root --password=$MYSQL_PASSWORD --local-infile $DBNAME
 done
@@ -297,3 +320,18 @@ for file in ${PRE}der2_Refset_*
 do
 	mysql -e "LOAD DATA LOCAL INFILE '$file' INTO TABLE simplerefsets IGNORE 1 LINES" -u root --password=$MYSQL_PASSWORD --local-infile $DBNAME
 done
+
+echo "
+USE $DBNAME;
+DROP TABLE IF EXISTS simplerefsets_snap;
+CREATE TABLE simplerefsets_snap AS
+SELECT d1.*
+FROM simplerefsets d1
+  JOIN (SELECT id, max(effectiveTime) as maxTime FROM simplerefsets
+GROUP BY id) d2 ON d1.id = d2.id AND d1.effectiveTime = d2.maxTime;
+
+ALTER TABLE simplerefsets_snap
+ADD PRIMARY KEY (id),
+ADD INDEX referencedComponentId (referencedComponentId ASC);
+" | mysql --user=root --password=$MYSQL_PASSWORD --local-infile
+
