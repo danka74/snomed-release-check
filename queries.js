@@ -164,9 +164,39 @@ const queries = [
                       tr
                         td #{refset.refsetId}
                         td #{refset.term}
-                        td #{refset.id}
+                        td
+                          a(href='/query/concept-refset-inactive/' + release + '/' + refset.id) #{refset.id}
           else
               p Inga inaktiva begrepp i refsets`
+      },
+      {
+        id: 'concept-refset-inactive',
+        nested: true,
+        sql: `
+        SELECT concepts_snap2.id, term, fsn
+        FROM concepts_snap2
+          JOIN descriptions_snap ON concepts_snap2.id = descriptions_snap.conceptId
+        WHERE descriptions_snap.moduleId = 45991000052106
+          AND concepts_snap2.id = __param__;
+        `,
+        pug: `html
+        head
+          title Snomed release #{release} - Inaktivt begrepp i refset
+        body
+          h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          if results.length
+              table
+                  tr
+                    th Begrepps-id
+                    th Term
+                    th FSN
+                  for c in results
+                      tr
+                        td #{c.id}
+                        td #{c.term}
+                        td #{c.fsn}
+          else
+              p Inga dubletter`
       },
       {
         id: 'duplicate-descriptions',
@@ -205,10 +235,10 @@ const queries = [
         id: 'concept-duplicate',
         nested: true,
         sql: `
-        SELECT concepts_snap.id, term
-        FROM concepts_snap
-          JOIN descriptions_snap ON concepts_snap.id = descriptions_snap.conceptId
-        WHERE concepts_snap.active = 1
+        SELECT concepts_snap2.id, term, fsn
+        FROM concepts_snap2
+          JOIN descriptions_snap ON concepts_snap2.id = descriptions_snap.conceptId
+        WHERE concepts_snap2.active = 1
           AND descriptions_snap.active = 1
           AND descriptions_snap.moduleId = 45991000052106
           AND term = '__param__';
@@ -223,10 +253,12 @@ const queries = [
                   tr
                     th Begrepps-id
                     th Term
+                    th FSN
                   for c in results
                       tr
                         td #{c.id}
                         td #{c.term}
+                        td #{c.fsn}
           else
               p Inga dubletter`
       },
@@ -253,7 +285,66 @@ const queries = [
               for desc in results
                   tr
                     td #{desc.ct}`
-      }
+      },
+      {
+        id: 'missing-refset-descriptors',
+        description: 'Refsets som saknar RefsetDescriptor',
+        sql: `
+select id, fsn
+from concepts_snap2
+where id in (
+
+	select refsetId
+	from languagerefsets_snap
+	where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
+)
+union
+select id, fsn
+from concepts_snap2
+where id in (
+	select refsetId
+	from simplerefsets_snap
+	where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
+);`,
+        pug: `html
+        head
+          title Snomed release #{release} - Refsets som saknar RefsetDescriptor
+        body
+          h1 Refsets som saknar RefsetDescriptor
+          table
+              tr
+                th Refset-id
+                th Refset-namn
+              for refset in results
+                  tr
+                    td #{refset.id}
+                    td #{refset.fsn}`
+      },
+      {
+        id: 'non-concept-refset-ids',
+        description: 'Refsets med id:n som inte är begrepps-id:n',
+        sql: `
+select distinct r.refsetId
+from simplerefsets_snap r
+where active = 1 
+  and r.refsetId not in (select id from concepts_snap where active = 1)
+order by refsetId;
+`,
+        pug: `html
+        head
+          title Snomed release #{release} - Refsets med id:n som inte är begrepps-id:n
+        body
+          h1 Refsets med id:n som inte är begrepps-id:n
+          table
+              tr
+                th Refset-id
+              for refset in results
+                  tr
+                    td #{refset.refsetId}`
+      },
+
+
+
     ];
 
 module.exports = queries;
