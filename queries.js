@@ -290,22 +290,22 @@ const queries = [
         id: 'missing-refset-descriptors',
         description: 'Refsets som saknar RefsetDescriptor',
         sql: `
-select id, fsn
-from concepts_snap2
-where id in (
+        select id, fsn
+        from concepts_snap2
+        where id in (
 
-	select refsetId
-	from languagerefsets_snap
-	where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
-)
-union
-select id, fsn
-from concepts_snap2
-where id in (
-	select refsetId
-	from simplerefsets_snap
-	where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
-);`,
+          select refsetId
+          from languagerefsets_snap
+          where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
+        )
+        union
+        select id, fsn
+        from concepts_snap2
+        where id in (
+          select refsetId
+          from simplerefsets_snap
+          where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
+        );`,
         pug: `html
         head
           title Snomed release #{release} - Refsets som saknar RefsetDescriptor
@@ -324,12 +324,12 @@ where id in (
         id: 'non-concept-refset-ids',
         description: 'Refsets med id:n som inte är begrepps-id:n',
         sql: `
-select distinct r.refsetId
-from simplerefsets_snap r
-where active = 1 
-  and r.refsetId not in (select id from concepts_snap where active = 1)
-order by refsetId;
-`,
+        select distinct r.refsetId
+        from simplerefsets_snap r
+        where active = 1 
+          and r.refsetId not in (select id from concepts_snap where active = 1)
+        order by refsetId;
+        `,
         pug: `html
         head
           title Snomed release #{release} - Refsets med id:n som inte är begrepps-id:n
