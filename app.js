@@ -10,6 +10,47 @@ app.set("view engine", "pug");
 
 const queries = require("./queries");
 
+// get SQL query (id, used to identify queries) for a specific release, possibly with a parameter
+app.get("/sql/:id/:release/:prmtr?", (req, res) => {
+  const release = req.params["release"];
+  const id = req.params["id"];
+  const param = req.params["prmtr"];
+
+  console.log(param);
+
+  if (!release || !id) {
+    res.status(400).send("Release and id needs to be specified");
+    return;
+  }
+
+  // find the query object correspondning to the id
+  const query = queries.find(e => {
+    return e.id === id;
+  });
+
+  // if the query id could not be found
+  if (!query) {
+    res.status(404).send("Cannot find query id");
+    return;
+  }
+
+  // insert release date into SQL query
+  var sqlQuery = query.sql.replace(/__release__/g, release.substr(release.lastIndexOf("_") + 1));
+
+  // if the SQL query has a parameter, replace that with the input parameter
+  if (sqlQuery.indexOf("__param__") != -1) {
+    if (!param) {
+      res.status(400).send("Missing parameter");
+      return;
+    }
+    sqlQuery = sqlQuery.replace(/__param__/g, param);
+  }
+
+  console.log(sqlQuery);
+
+  res.status(200).send(sqlQuery);
+});
+
 // specific queries (id, used to identify queries) for a specific release, possibly with a parameter
 app.get("/query/:id/:release/:prmtr?", (req, res) => {
   const release = req.params["release"];
