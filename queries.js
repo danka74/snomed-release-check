@@ -18,7 +18,8 @@ const queries = [
       description: 'Ändrade begrepp sedan förra releasen',
       sql: `
       SELECT 'changed', count(*) AS ct FROM concepts
-      WHERE moduleId = 45991000052106
+      WHERE active = 1
+        AND moduleId = 45991000052106
         AND effectiveTime = __release__
         AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1)
       UNION
