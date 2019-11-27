@@ -153,7 +153,7 @@ app.get("/all-queries/:release", (req, res) => {
 
   res.render("all-queries", {
     queries: queries.filter(q => {
-      return q.nested == true || q.sql.indexOf("__param__") == -1;
+      return !(q.nested == true) && q.sql.indexOf("__param__") == -1;
     }), // only non-nested queries without paramaters are meaningful here
     release: release
   });
