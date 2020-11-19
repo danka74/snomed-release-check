@@ -46,9 +46,9 @@ app.get("/sql/:id/:release/:prmtr?", (req, res) => {
     sqlQuery = sqlQuery.replace(/__param__/g, param);
   }
 
-  console.log(sqlQuery);
+  // console.log(sqlQuery);
 
-  res.status(200).send(sqlQuery);
+  res.type('text/plain').status(200).send(sqlQuery);
 });
 
 // specific queries (id, used to identify queries) for a specific release, possibly with a parameter
@@ -156,7 +156,7 @@ app.get("/", (req, res) => {
     }
 
     results = results
-      .filter(db => db.Database.startsWith("snomed_full_") || db.Database.startsWith("xsnomed_full_"))
+      .filter(db => db.Database.startsWith("snomed_full_") || db.Database.startsWith("xsnomed_full_") || db.Database.startsWith("_beta_snomed_full_") || db.Database.startsWith("x_beta_snomed_"))
       .map(db => db.Database);
 
     res.render("select-db", {

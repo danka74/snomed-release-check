@@ -343,6 +343,57 @@ const queries = [
                   tr
                     td #{refset.refsetId}`
       },
+	{
+        id: 'se-module-with-non-se-ids',
+        description: 'Begrepp etc. i svenska modulen som har icke-svenska id:n',
+        sql: `
+        select 'begrepp' as typ, id, fsn as term
+	from concepts_snap2
+	where moduleId = 45991000052106
+	  and active = 1
+	  and id not like '%1000052%' and id not like '%1000057%'
+	union
+	select 'beskrivning' as typ, id, term
+	from descriptions_snap
+	where moduleId = 45991000052106
+	  and active = 1
+	  and id not like '%1000052%' and id not like '%1000057%'
+	union
+	select 'relation' as typ, id, sourceId as term
+	from relationships_snap
+	where moduleId = 45991000052106
+	  and active = 1
+	  and id not like '%1000052%' and id not like '%1000057%'
+	union
+	select 'lang-refset' as typ, id, referencedComponentId as term
+	from languagerefsets_snap
+	where moduleId = 45991000052106
+	  and active = 1
+	  and referencedComponentId not like '%1000052%' and referencedComponentId not like '%1000057%'
+	union
+	select 'axiom' as typ, id, concat(referencedComponentId, ' : ', owlExpression) as term
+	from owlrefsets
+	where moduleId = 45991000052106
+	  and active = 1
+	  and referencedComponentId not like '%1000052%' and referencedComponentId not like '%1000057%';
+        `,
+        pug: `html
+        head
+          title Snomed release #{release} - Begrepp etc. i svenska modulen som har icke-svenska id:n
+        body
+          h1 Begrepp etc. i svenska modulen som har icke-svenska id:n
+          table
+              tr
+                th Typ
+                th Id
+                th FSN
+              for row in results
+                  tr
+                    td #{row.typ}
+                    td #{row.id}
+                    td #{row.term}`
+      },
+
 
 
 
