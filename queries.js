@@ -30,6 +30,39 @@ const queries = [
         AND id IN (SELECT id FROM concepts GROUP BY id HAVING count(*) > 1)`
     },
     {
+      id: 'promoted-concepts',
+      description: 'Promotade begrepp sedan förra releasen',
+      sql: `
+      select id, fsn from concepts_snap2
+      where id in (select distinct id
+	from concepts
+	where id in (select id
+		from concepts_snap2
+		where id like '%1000052%' and moduleId = 900000000000207008 and effectiveTime = __release__)
+	  and id not in (select id
+		from concepts
+		where id like '%1000052%' and moduleId = 900000000000207008 and effectiveTime < __release__)
+	and effectiveTime < __release__ and moduleId = 45991000052106);`,
+      pug: `html
+      head
+        title Snomed release #{release} - Promotade begrepp sedan förra releasen
+      body
+        h1 Promotade begrepp sedan förra releasen
+        p Antal: #{results.length}
+        if results.length
+            table
+                tr 
+                    th ConceptId
+                    th Term
+                for c in results
+                    tr
+                        td #{c.conceptId}
+                        td #{c.term}
+        else
+            p Inga promotade begrepp sedan förra releasen`
+
+    },
+    {
       id: 'descriptions',
       description: 'Nya och borttagna beskrivningar',
       sql: `
@@ -60,6 +93,37 @@ const queries = [
         AND active = 0;`
     },
     {
+      id: 'funky-chars',
+      description: 'Konstiga tecken i beskrivningar',
+      sql: `
+      select id, conceptId, term, languageCode from descriptions_snap
+      where active = 1
+        and moduleId = 45991000052106
+	and term not regexp '^[\\\\[\\\\]0-9A-Za-zÅÄÖåäöÜüÉé ())-.,=;:%\/<>\^µ\\'{}]*$'
+      order by languageCode, term;`,
+      pug: `html
+      head
+        title Snomed release #{release} - Konstiga tecken i beskrivningar
+      body
+        h1 Konstiga tecken i beskrivningar
+        p Antal: #{results.length}
+        if results.length
+            table
+                tr 
+                    th DescriptionId
+                    th ConceptId
+                    th Term
+                    th Språk
+                for desc in results
+                    tr
+                        td #{desc.id}
+                        td #{desc.conceptId}
+                        td #{desc.term}
+                        td #{desc.languageCode}
+        else
+            p Inga konstiga tecken i beskrivningar`
+    },
+    {
       id: 'non-translated',
       description: 'Icke-översatta begrepp efter hierarki',
       sql: `
@@ -75,21 +139,22 @@ const queries = [
       id: 'refsets-with-inactive',
       description: 'Refsets med inaktiva begrepp',
       sql: `
-      SELECT simplerefsets_snap.refsetId, descriptions_snap.term, count(*) AS ct FROM simplerefsets_snap
-        JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id
-        JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
-        JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
-        WHERE simplerefsets_snap.active = 1
-        AND simplerefsets_snap.referencedComponentId IN (SELECT id FROM concepts_snap WHERE active = 0)
-        AND languagerefsets_snap.acceptabilityId = 900000000000548007
+      SELECT simpleRefsets_snap.refsetId, descriptions_snap.term, count(*) AS ct FROM simpleRefsets_snap
+        JOIN concepts_snap ON simpleRefsets_snap.referencedComponentId = concepts_snap.id
+        JOIN descriptions_snap ON simpleRefsets_snap.refsetId = descriptions_snap.conceptId
+        JOIN languageRefsets_snap ON descriptions_snap.id = languageRefsets_snap.referencedComponentId
+        WHERE simpleRefsets_snap.active = 1
+        AND simpleRefsets_snap.referencedComponentId IN (SELECT id FROM concepts_snap WHERE active = 0)
+        AND languageRefsets_snap.acceptabilityId = 900000000000548007
         AND descriptions_snap.languageCode = 'sv'
         AND descriptions_snap.active = 1
-        GROUP BY simplerefsets_snap.refsetId, descriptions_snap.term;`,
+        GROUP BY simpleRefsets_snap.refsetId, descriptions_snap.term;`,
       pug: `html
       head
         title Snomed release #{release} - Refsets med inaktiva begrepp
       body
         h1 Refsets med inaktiva begrepp
+        p Antal: #{results.length}
         if results.length
             table
                 tr 
@@ -108,20 +173,21 @@ const queries = [
         id: 'refsets-with-inactive2',
         description: 'Refsets med inaktiva begrepp v2',
         sql: `
-        SELECT simplerefsets_snap.refsetId, descriptions_snap.term, ifnull(count(concepts_snap.id), 0) AS ct FROM simplerefsets_snap
-            LEFT JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id AND concepts_snap.active = 0
-            JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
-            JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
-        WHERE simplerefsets_snap.active = 1
-            AND languagerefsets_snap.acceptabilityId = 900000000000548007
+        SELECT simpleRefsets_snap.refsetId, descriptions_snap.term, ifnull(count(concepts_snap.id), 0) AS ct FROM simpleRefsets_snap
+            LEFT JOIN concepts_snap ON simpleRefsets_snap.referencedComponentId = concepts_snap.id AND concepts_snap.active = 0
+            JOIN descriptions_snap ON simpleRefsets_snap.refsetId = descriptions_snap.conceptId
+            JOIN languageRefsets_snap ON descriptions_snap.id = languageRefsets_snap.referencedComponentId
+        WHERE simpleRefsets_snap.active = 1
+            AND languageRefsets_snap.acceptabilityId = 900000000000548007
             AND descriptions_snap.languageCode = 'sv'
             AND descriptions_snap.active = 1
-        GROUP BY simplerefsets_snap.refsetId, descriptions_snap.term;`,
+        GROUP BY simpleRefsets_snap.refsetId, descriptions_snap.term;`,
         pug: `html
         head
           title Snomed release #{release} - Refsets med inaktiva begrepp
         body
           h1 Refsets med inaktiva begrepp
+          p Antal: #{results.length}
           if results.length
               table
                   tr
@@ -140,13 +206,13 @@ const queries = [
         id: 'inactive-concepts-in-refsets',
         description: 'Inaktiva begrepp som finns aktiva i refsets',
         sql: `
-        SELECT simplerefsets_snap.refsetId, descriptions_snap.term, concepts_snap.id FROM simplerefsets_snap
-            JOIN concepts_snap ON simplerefsets_snap.referencedComponentId = concepts_snap.id 
-            JOIN descriptions_snap ON simplerefsets_snap.refsetId = descriptions_snap.conceptId
-            JOIN languagerefsets_snap ON descriptions_snap.id = languagerefsets_snap.referencedComponentId
-        WHERE simplerefsets_snap.active = 1
+        SELECT simpleRefsets_snap.refsetId, descriptions_snap.term, concepts_snap.id FROM simpleRefsets_snap
+            JOIN concepts_snap ON simpleRefsets_snap.referencedComponentId = concepts_snap.id 
+            JOIN descriptions_snap ON simpleRefsets_snap.refsetId = descriptions_snap.conceptId
+            JOIN languageRefsets_snap ON descriptions_snap.id = languageRefsets_snap.referencedComponentId
+        WHERE simpleRefsets_snap.active = 1
             AND concepts_snap.active = 0
-            AND languagerefsets_snap.acceptabilityId = 900000000000548007
+            AND languageRefsets_snap.acceptabilityId = 900000000000548007
             AND descriptions_snap.languageCode = 'sv'
             AND descriptions_snap.active = 1
 	ORDER BY refsetId, term`,
@@ -155,6 +221,7 @@ const queries = [
           title Snomed release #{release} - Inaktiva begrepp i refsets
         body
           h1 Inaktiva begrepp som finns aktiva i refsets i den svenska utg&aring;van
+          p Antal: #{results.length}
           if results.length
               table
                   tr
@@ -185,6 +252,7 @@ const queries = [
           title Snomed release #{release} - Inaktivt begrepp i refset
         body
           h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          p Antal: #{results.length}
           if results.length
               table
                   tr
@@ -217,6 +285,7 @@ const queries = [
           title Snomed release #{release} - Dubletter
         body
           h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          p Antal: #{results.length}
           if results.length
               table
                   tr
@@ -231,6 +300,34 @@ const queries = [
                         td #{desc.ct}
           else
               p Inga dubletter`
+      },
+      {
+        id: 'descriptions-spaces',
+        description: 'Ogiltiga mellanslag i beskrivningar',
+        sql: `
+select id, term
+from descriptions_snap
+where moduleId = 45991000052106
+  and active = 1
+  and (term regexp '^[[:space:]]+' or term regexp '[[:space:]]+$' or term regexp '[[:space:]]{2,}')
+`,
+        pug: `html
+        head
+          title Snomed release #{release} - Ogiltiga mellanslag i beskrivningar
+        body
+          h1 Ogiltiga mellanslag i beskrivningar
+          p Antal: #{results.length}
+          if results.length
+              table
+                  tr
+                    th Id
+                    th Term
+                  for desc in results
+                      tr
+                        td #{desc.id}
+                        td #{desc.term}
+          else
+              p Inga ogiltiga mellanslag`
       },
       {
         id: 'concept-duplicate',
@@ -249,6 +346,7 @@ const queries = [
           title Snomed release #{release} - Dubletter
         body
           h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          p Antal: #{results.length}
           if results.length
               table
                   tr
@@ -264,6 +362,34 @@ const queries = [
               p Inga dubletter`
       },
       {
+        id: 'active-langrefset-en-descriptions',
+        description: 'Aktiva medlemmar i svenska language refsets som pekar på engelska beskrivningar',
+        sql: `
+        SELECT S.term, D.referencedComponentId, D.refsetId 
+FROM languageRefsets_snap D 
+inner descriptions_snap S 
+ on D.referencedComponentId = S.id 
+WHERE S.active = 1 AND D.active = 1 and S.languageCode = "en" and S.moduleId = 45991000052106 and D.refsetId <> 900000000000509007 and D.refsetId <> 900000000000508004
+;`,
+        pug: `html
+        head
+          title Snomed release #{release} - Aktiva medlemmar i svenska language refsets som pekar på engelska beskrivningar
+        body
+          h1 Aktiva medlemmar i svenska language refsets som pekar på engelska beskrivningar
+          p Antal: #{results.length}
+          table
+              tr
+                th RefsetId
+                th DescriptionId
+                th Term
+              for m in results
+                  tr
+                    td #{m.refsetId}
+                    td #{m.referencedComponentId}
+                    td #{m.term}
+`
+      },
+      {
         id: 'active-langrefset-inactive-descriptions',
         description: 'Aktiva medlemmar i language refsets som pekar på inaktiva beskrivningar',
         sql: `
@@ -272,7 +398,7 @@ const queries = [
         FROM
             descriptions_snap d
                 JOIN
-            languagerefsets_snap l ON d.id = l.referencedComponentId
+            languageRefsets_snap l ON d.id = l.referencedComponentId
         WHERE
             d.active = 0 AND l.active = 1`,
         pug: `html
@@ -280,6 +406,7 @@ const queries = [
           title Snomed release #{release} - Aktiva i language refset med inaktiva beskrivningar
         body
           h1 Aktiva medlemmar i language refsets som pekar på inaktiva beskrivningar
+          p Antal: #{results.length}
           table
               tr
                 th Antal
@@ -288,30 +415,105 @@ const queries = [
                     td #{desc.ct}`
       },
       {
+        id: 'active-langrefset-multiple-descriptions',
+        description: 'Flera aktiva medlemmar i language refsets som pekar på samma aktiva beskrivning',
+        sql: `
+        select refsetId, c.fsn, referencedComponentId, d.term
+from languageRefsets_snap l
+  join concepts_snap2 c on l.refsetId = c.id
+  join descriptions_snap d on l.referencedComponentId = d.id
+where l.moduleId = 45991000052106
+  and l.active = 1
+  and c.active = 1
+  and d.active = 1
+group by l.refsetId, l.referencedComponentId
+having count(*) > 1;`,
+        pug: `html
+        head
+          title Snomed release #{release} - Flera aktiva medlemmar i language refsets som pekar på samma aktiva beskrivning
+        body
+          h1 Flera aktiva medlemmar i language refsets som pekar på samma aktiva beskrivning
+          p Antal: #{results.length}
+          table
+              tr
+                th RefsetId
+                th Refset
+                th DescriptionId
+                th Term
+              for member in results
+                  tr
+                    td
+                      a(href='/query/multi-desc-lang-refset/' + release + '/' + member.refsetId) #{member.refsetId}
+                    td #{member.fsn}
+                    td #{member.referencedComponentId}
+                    td #{member.term}`
+      },
+      {
+        id: 'multi-desc-lang-refset',
+        nested: true,
+        sql: `
+select * 
+from languageRefsets_snap l
+  join descriptions_snap d on l.referencedComponentId = d.id
+where refsetId = __param__
+   and l.active = 1
+   and d.active = 1
+   and referencedComponentId in (
+select l.referencedComponentId
+from languageRefsets_snap l
+where refsetId = __param__
+group by referencedComponentId
+having count(*) > 1
+)        `,
+        pug: `html
+        head
+          title Snomed release #{release} - Inaktivt begrepp i refset
+        body
+          h1 Beskrivningar som f&ouml;rekommer f&ouml;r fler &auml;n ett begrepp med samma semantiska etikett
+          p Antal: #{results.length}
+          if results.length
+              table
+                  tr
+                    th Id
+                    th EffectiveTime
+                    th RefsetId
+                    th ReferencedComponentId
+                    th Term
+                  for c in results
+                      tr
+                        td #{c.id}
+                        td #{c.effectiveTime}
+                        td #{c.refsetId}
+                        td #{c.referencedComponentId}
+                        td #{c.term}
+          else
+              p Inga dubletter`
+      },
+      {
         id: 'missing-refset-descriptors',
         description: 'Refsets som saknar RefsetDescriptor',
         sql: `
         select id, fsn
         from concepts_snap2
         where id in (
-
           select refsetId
-          from languagerefsets_snap
-          where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
+          from languageRefsets_snap
+          where refsetId not in (SELECT r.referencedComponentId FROM refsetDescriptors_snap r)
         )
         union
         select id, fsn
         from concepts_snap2
         where id in (
           select refsetId
-          from simplerefsets_snap
-          where refsetId not in (SELECT r.referencedComponentId FROM refsetdescriptors_snap r)
+          from simpleRefsets_snap
+          where refsetId not in (SELECT r.referencedComponentId FROM refsetDescriptors_snap r)
         );`,
         pug: `html
         head
           title Snomed release #{release} - Refsets som saknar RefsetDescriptor
         body
           h1 Refsets som saknar RefsetDescriptor
+          p Antal: #{results.length}
           table
               tr
                 th Refset-id
@@ -326,7 +528,7 @@ const queries = [
         description: 'Refsets med id:n som inte är begrepps-id:n',
         sql: `
         select distinct r.refsetId
-        from simplerefsets_snap r
+        from simpleRefsets_snap r
         where active = 1 
           and r.refsetId not in (select id from concepts_snap where active = 1)
         order by refsetId;
@@ -336,6 +538,7 @@ const queries = [
           title Snomed release #{release} - Refsets med id:n som inte är begrepps-id:n
         body
           h1 Refsets med id:n som inte är begrepps-id:n
+          p Antal: #{results.length}
           table
               tr
                 th Refset-id
@@ -347,32 +550,32 @@ const queries = [
         id: 'se-module-with-non-se-ids',
         description: 'Begrepp etc. i svenska modulen som har icke-svenska id:n',
         sql: `
-        select 'begrepp' as typ, id, fsn as term
+        select 'begrepp' as typ, id, fsn as term, effectiveTime
 	from concepts_snap2
 	where moduleId = 45991000052106
 	  and active = 1
 	  and id not like '%1000052%' and id not like '%1000057%'
 	union
-	select 'beskrivning' as typ, id, term
+	select 'beskrivning' as typ, id, term, effectiveTime
 	from descriptions_snap
 	where moduleId = 45991000052106
 	  and active = 1
 	  and id not like '%1000052%' and id not like '%1000057%'
 	union
-	select 'relation' as typ, id, sourceId as term
+	select 'relation' as typ, id, sourceId as term, effectiveTime
 	from relationships_snap
 	where moduleId = 45991000052106
 	  and active = 1
 	  and id not like '%1000052%' and id not like '%1000057%'
 	union
-	select 'lang-refset' as typ, id, referencedComponentId as term
-	from languagerefsets_snap
+	select 'lang-refset' as typ, id, referencedComponentId as term, effectiveTime
+	from languageRefsets_snap
 	where moduleId = 45991000052106
 	  and active = 1
 	  and referencedComponentId not like '%1000052%' and referencedComponentId not like '%1000057%'
 	union
-	select 'axiom' as typ, id, concat(referencedComponentId, ' : ', owlExpression) as term
-	from owlrefsets
+	select 'axiom' as typ, id, concat(referencedComponentId, ' : ', owlExpression) as term, effectiveTime
+	from owlRefsets
 	where moduleId = 45991000052106
 	  and active = 1
 	  and referencedComponentId not like '%1000052%' and referencedComponentId not like '%1000057%';
@@ -382,14 +585,17 @@ const queries = [
           title Snomed release #{release} - Begrepp etc. i svenska modulen som har icke-svenska id:n
         body
           h1 Begrepp etc. i svenska modulen som har icke-svenska id:n
+          p Antal: #{results.length}
           table
               tr
                 th Typ
+                th EffectiveTime
                 th Id
                 th FSN
               for row in results
                   tr
                     td #{row.typ}
+                    td #{row.effectiveTime}
                     td #{row.id}
                     td #{row.term}`
       },
