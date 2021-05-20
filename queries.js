@@ -56,8 +56,8 @@ const queries = [
                     th Term
                 for c in results
                     tr
-                        td #{c.conceptId}
-                        td #{c.term}
+                        td #{c.id}
+                        td #{c.fsn}
         else
             p Inga promotade begrepp sedan förra releasen`
 
