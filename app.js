@@ -10,9 +10,18 @@ app.set("view engine", "pug");
 
 const queries = require("./queries");
 
+const getIntRelease = (release) => {
+  const year = release.substr(0, 4);
+  if (release && release.match(/....0531/)) {
+    return year + '0131';
+  } else {
+    return year + '0731';
+  }
+};
+
 // get SQL query (id, used to identify queries) for a specific release, possibly with a parameter
 app.get("/sql/:id/:release/:prmtr?", (req, res) => {
-  const release = req.params["release"];
+  var release = req.params["release"];
   const id = req.params["id"];
   const param = req.params["prmtr"];
 
@@ -22,6 +31,8 @@ app.get("/sql/:id/:release/:prmtr?", (req, res) => {
     res.status(400).send("Release and id needs to be specified");
     return;
   }
+
+  release = release.substr(release.lastIndexOf("_") + 1);
 
   // find the query object correspondning to the id
   const query = queries.find(e => {
@@ -35,7 +46,8 @@ app.get("/sql/:id/:release/:prmtr?", (req, res) => {
   }
 
   // insert release date into SQL query
-  var sqlQuery = query.sql.replace(/__release__/g, release.substr(release.lastIndexOf("_") + 1));
+  var sqlQuery = query.sql.replace(/__release__/g, release);
+  sqlQuery = query.sql.replace(/__int_release__/g, getIntRelease(release));
 
   // if the SQL query has a parameter, replace that with the input parameter
   if (sqlQuery.indexOf("__param__") != -1) {
