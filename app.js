@@ -21,7 +21,7 @@ const getIntRelease = (release) => {
 
 // get SQL query (id, used to identify queries) for a specific release, possibly with a parameter
 app.get("/sql/:id/:release/:prmtr?", (req, res) => {
-  var release = req.params["release"];
+  const release = req.params["release"];
   const id = req.params["id"];
   const param = req.params["prmtr"];
 
@@ -32,7 +32,7 @@ app.get("/sql/:id/:release/:prmtr?", (req, res) => {
     return;
   }
 
-  release = release.substr(release.lastIndexOf("_") + 1);
+  const release_date = release.substr(release.lastIndexOf("_") + 1);
 
   // find the query object correspondning to the id
   const query = queries.find(e => {
@@ -46,8 +46,8 @@ app.get("/sql/:id/:release/:prmtr?", (req, res) => {
   }
 
   // insert release date into SQL query
-  var sqlQuery = query.sql.replace(/__release__/g, release);
-  sqlQuery = query.sql.replace(/__int_release__/g, getIntRelease(release));
+  var sqlQuery = query.sql.replace(/__release__/g, release_date);
+  sqlQuery = sqlQuery.replace(/__int_release__/g, getIntRelease(release_date));
 
   // if the SQL query has a parameter, replace that with the input parameter
   if (sqlQuery.indexOf("__param__") != -1) {
@@ -76,6 +76,8 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
     return;
   }
 
+  const release_date = release.substr(release.lastIndexOf("_") + 1);
+
   // find the query object correspondning to the id
   const query = queries.find(e => {
     return e.id === id;
@@ -88,7 +90,9 @@ app.get("/query/:id/:release/:prmtr?", (req, res) => {
   }
 
   // insert release date into SQL query
-  var sqlQuery = query.sql.replace(/__release__/g, release.substr(release.lastIndexOf("_") + 1));
+  var sqlQuery = query.sql.replace(/__release__/g, release_date);
+  sqlQuery = sqlQuery.replace(/__int_release__/g, getIntRelease(release_date));
+
 
   // if the SQL query has a parameter, replace that with the input parameter
   if (sqlQuery.indexOf("__param__") != -1) {
