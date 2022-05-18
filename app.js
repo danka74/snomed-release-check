@@ -216,6 +216,9 @@ app.get("/all-queries/:release", (req, res) => {
   });
 });
 
-app.listen(3000, "0.0.0.0", () => {
-  console.log("Listening...");
+const app2 = express();
+app2.use('/releasecheck', app);
+
+app2.listen(3002, "0.0.0.0", () => {
+  console.log("Listening on port 3002");
 });

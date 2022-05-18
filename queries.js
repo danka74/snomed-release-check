@@ -270,13 +270,16 @@ const queries = [
       {
         id: 'duplicate-descriptions',
         description: 'Beskrivningar som förekommer för fler än ett begrepp med samma semantiska etikett',
-        sql: `
-        SELECT term, semtag, count(descriptions_snap.id) AS ct
+        sql: `SELECT term, semtag, count(descriptions_snap.id) AS ct
         FROM descriptions_snap
           JOIN concepts_snap2 ON descriptions_snap.conceptId = concepts_snap2.id
-        WHERE languageCode = "sv" 
+          JOIN languageRefsets_snap ON descriptions_snap.id = languageRefsets_snap.referencedComponentId
+        WHERE languageCode = "sv"
           AND concepts_snap2.active = 1
           AND descriptions_snap.active = 1
+          AND languageRefsets_snap.refsetId = 46011000052107
+          AND languageRefsets_snap.active = 1
+          AND languageRefsets_snap.acceptabilityId = 900000000000548007
         GROUP BY BINARY term, term, semtag
         HAVING count(descriptions_snap.id) > 1
         ORDER BY ct DESC`,
@@ -295,7 +298,7 @@ const queries = [
                   for desc in results
                       tr
                         td 
-                          a(href='/query/concept-duplicate/' + release + '/' + desc.term) #{desc.term}
+                          a(href='/releasecheck/query/concept-duplicate/' + release + '/' + desc.term) #{desc.term}
                         td #{desc.semtag}
                         td #{desc.ct}
           else
