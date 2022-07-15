@@ -172,7 +172,7 @@ app.get("/", (req, res) => {
     }
 
     results = results
-      .filter(db => db.Database.startsWith("snomed_full_") || db.Database.startsWith("xsnomed_full_") || db.Database.startsWith("_beta_snomed_full_") || db.Database.startsWith("x_beta_snomed_"))
+      .filter(db => db.Database.match(/x?(_beta_)?snomed_.*full_/g)) // || db.Database.startsWith("snomed_full_") || db.Database.startsWith("xsnomed_full_") || db.Database.startsWith("_beta_snomed_full_") || db.Database.startsWith("x_beta_snomed_"))
       .map(db => db.Database);
 
     res.render("select-db", {
@@ -208,6 +208,7 @@ app.get("/all-queries/:release", (req, res) => {
     return;
   }
 
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.render("all-queries", {
     queries: queries.filter(q => {
       return !(q.nested == true) && q.sql.indexOf("__param__") == -1;
