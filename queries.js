@@ -38,10 +38,10 @@ const queries = [
         from concepts
         where id in (select id
             from concepts_snap2
-            where id like '%1000052%' and moduleId = 900000000000207008 and effectiveTime = __int_release__)
+            where id like '%1000052%' and moduleId = 900000000000207008 and effectiveTime > __int_release__)
           and id not in (select id
             from concepts
-            where id like '%1000052%' and moduleId = 900000000000207008 and effectiveTime < __int_release__)
+            where id like '%1000052%' and moduleId = 900000000000207008 and effectiveTime <= __int_release__)
         and effectiveTime < __release__ and moduleId = 45991000052106);`,
       pug: `html
       head

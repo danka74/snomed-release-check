@@ -11,11 +11,11 @@ app.set("view engine", "pug");
 const queries = require("./queries");
 
 const getIntRelease = (release) => {
-  const year = release.substr(0, 4);
+  const year = parseInt(release.substr(0, 4));
   if (release && release.match(/....0531/)) {
-    return year + '0131';
+    return String(year - 1) + '0731';
   } else {
-    return year + '0731';
+    return String(year) + '0131';
   }
 };
 
